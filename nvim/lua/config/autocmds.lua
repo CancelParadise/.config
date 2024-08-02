@@ -120,16 +120,6 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- vim.api.nvim_create_autocmd("FileType", {
---   callback = function()
---     local lang = vim.treesitter.language.get_lang(vim.bo.filetype)
---     if lang and pcall(vim.treesitter.language.add, lang) then
---       -- vim.treesitter.start()  -- sync
---       vim.treesitter.start(nil, nil, { timeout = 1 }) -- async
---     end
---   end,
--- })
-
 -- Disable diagnostics in a .env file
 vim.api.nvim_create_autocmd("BufRead", {
   pattern = ".env",
@@ -143,8 +133,5 @@ vim.api.nvim_create_autocmd("BufRead", {
   pattern = "*",
   callback = function()
     local size = vim.fn.getfsize(vim.fn.expand("%:p"))
-    if size > 500000 then
-      -- vim.treesitter.stop()
-    end
   end,
 })

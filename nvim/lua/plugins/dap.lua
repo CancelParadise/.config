@@ -23,14 +23,13 @@ return {
         require("dap.ext.autocompl").attach()
       end,
     })
-
-    require("which-key").register({
-      ["<leader>d"] = { name = "+debug" },
-      ["<leader>db"] = { name = "+breakpoints" },
-      ["<leader>ds"] = { name = "+steps" },
-      ["<leader>dv"] = { name = "+views" },
+    local wk = require("which-key")
+    wk.add({
+      { "<leader>d", group = "debug" },
+      { "<leader>db", group = "breakpoints" },
+      { "<leader>ds", group = "steps" },
+      { "<leader>dv", group = "views" },
     })
-
     local dap = require("dap")
     dap.configurations.lua = {
       {

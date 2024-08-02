@@ -16,10 +16,6 @@ _G.bt = function(...)
 end
 vim.print = _G.dd
 
--- require("util.profiler").startup()
-
--- vim.loader._profile({ loaders = true })
-
 -- vim.g.profile_loaders = true
 require("config.lazy")({
   debug = false,

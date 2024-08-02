@@ -99,12 +99,6 @@ return {
             files = { "src/parser.c", "src/scanner.c" },
           },
         },
-        -- thrift = {
-        --   install_info = {
-        --     url = "~/projects/treesitter/tree-sitter-thrift",
-        --     files = { "src/parser.c" },
-        --   },
-        -- },
         uxntal = {
           install_info = {
             url = "~/projects/treesitter/tree-sitter-uxntal",
@@ -142,15 +136,6 @@ return {
             files = { "src/parser.c", "src/scanner.c" },
           },
         },
-        -- snakemake = {
-        --   install_info = {
-        --     url = "https://github.com/osthomas/tree-sitter-snakemake",
-        --     branch = "main",
-        --     location = "tree-sitter-snakemake",
-        --     files = { "src/parser.c", "src/scanner.c" },
-        --   },
-        --   experimental = true,
-        -- },
         odin = {
           install_info = {
             url = "~/projects/treesitter/tree-sitter-odin",
