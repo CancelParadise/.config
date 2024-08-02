@@ -90,7 +90,6 @@ vim.filetype.add({
     objdump = "objdump",
     gn = "gn",
     gni = "gn",
-    tv = "testvector",
     slint = "slint",
   },
   pattern = {

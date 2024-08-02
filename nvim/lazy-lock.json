@@ -36,7 +36,7 @@
   "gitlinker.nvim": { "branch": "master", "commit": "cc59f732f3d043b626c8702cb725c82e54d35c25" },
   "gitsigns.nvim": { "branch": "main", "commit": "0ed466953fe5885166e0d60799172a8b1f752d16" },
   "godbolt.nvim": { "branch": "main", "commit": "777a454e310a6b03c498727449eff3caabd70fa1" },
-  "grug-far.nvim": { "branch": "main", "commit": "724b8019fcfeee51dcc6e76c543eba30b5570a26" },
+  "grug-far.nvim": { "branch": "main", "commit": "476c5b6872f2f996a19707566d8e6c3cc0d5b303" },
   "inc-rename.nvim": { "branch": "main", "commit": "8ba77017ca468f3029bf88ef409c2d20476ea66b" },
   "indent-blankline.nvim": { "branch": "master", "commit": "65e20ab94a26d0e14acac5049b8641336819dfc7" },
   "lazy.nvim": { "branch": "main", "commit": "077102c5bfc578693f12377846d427f49bc50076" },
