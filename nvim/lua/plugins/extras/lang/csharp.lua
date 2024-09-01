@@ -66,6 +66,7 @@ return {
     optional = true,
     opts = function()
       local dap = require("dap")
+      -- Configure the .NET Core debugger with netcoredbg
       if not dap.adapters["netcoredbg"] then
         require("dap").adapters["netcoredbg"] = {
           type = "executable",
@@ -81,17 +82,22 @@ return {
           dap.configurations[lang] = {
             {
               type = "netcoredbg",
-              name = "Launch bbl-coupon-cms",
+              name = "Launch Otep CMS Api",
               request = "launch",
-              ---@diagnostic disable-next-line: redundant-parameter
               program = function()
-                return vim.fn.input(
-                  "Path to dll: ",
-                  vim.fn.getcwd() .. "bbl-coupon-cms/bin/Debug/net5.0/bbl-coupon-cms.dll",
-                  "file"
-                )
+                return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/otep/bin/Debug/net8.0/otep_cms.dll", "file")
               end,
-              cwd = "${workspaceFolder}",
+              cwd = vim.fn.getcwd() .. "/otep",
+              env = {
+                ASPNETCORE_ENVIRONMENT = "Localhost",
+              },
+              args = {
+                "/p:EnvironmentName=Localhost",
+                "--urls=https://localhost:7054",
+                "--environment=Localhost",
+              },
+              port = 7054,
+              preLaunchTask = "build",
             },
           }
         end

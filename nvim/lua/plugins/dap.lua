@@ -114,7 +114,7 @@ return {
     },
     { "<leader>dr", '<cmd>lua require("dap").repl.open()<cr>', desc = "Repl" },
     { "<leader>du", '<cmd>lua require("dapui").toggle()<cr>', desc = "Dap UI" },
-    { "<leader>dd", '<cmd>lua require("osv").run_this()<cr>', desc = "Launch Lua Debugger" },
-    { "<leader>dl", '<cmd>lua require("osv").launch({ port = 8086 })<cr>', desc = "Launch Lua Debugger Server" },
+    -- { "<leader>dd", '<cmd>lua require("osv").run_this()<cr>', desc = "Launch Lua Debugger" },
+    -- { "<leader>dl", '<cmd>lua require("osv").launch({ port = 8086 })<cr>', desc = "Launch Lua Debugger Server" },
   },
 }

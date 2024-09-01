@@ -37,7 +37,9 @@
 		"plugins.extras.lang.scala",
 		"plugins.extras.lang.svelte",
 		"plugins.extras.lang.verilog",
-		"plugins.extras.lang.zig"
+		"plugins.extras.lang.zig",
+		"plugins.extras.lang.csharp",
+		"plugins.extras.lang.angular"
 	],
 	"news": {
 		"NEWS.md": "6520"
