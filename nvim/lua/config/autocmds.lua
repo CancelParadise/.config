@@ -39,7 +39,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 
 -- Set indent level for certain filetypes
 vim.api.nvim_create_autocmd({ "FileType", "BufRead", "BufNewFile" }, {
-  pattern = { "firrtl", "lua", "javascript", "typescript", "typescriptreact", "text", "query", "systemverilog", "norg" },
+  pattern = { "firrtl", "lua", "javascript", "typescript", "typescriptreact", "text", "query", "systemverilog" },
   callback = function(args)
     -- ignore frida scripts
     if args.filetype == "javascript" and vim.fn.expand("%:e") == "so" then
@@ -120,12 +120,12 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 -- Disable diagnostics in a .env file
-vim.api.nvim_create_autocmd("BufRead", {
-  pattern = ".env",
-  callback = function()
-    vim.diagnostic.disable(0)
-  end,
-})
+-- vim.api.nvim_create_autocmd("BufRead", {
+--   pattern = ".env",
+--   callback = function()
+--     vim.diagnostic.disable(0)
+--   end,
+-- })
 
 -- Disable tree-sitter for files over 1MB in size
 vim.api.nvim_create_autocmd("BufRead", {

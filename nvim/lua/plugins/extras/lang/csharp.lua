@@ -5,7 +5,7 @@ return {
     opts = { ensure_installed = { "c_sharp" } },
   },
   {
-    "williamboman/mason.nvim",
+    "mason-org/mason.nvim",
     opts = { ensure_installed = { "csharpier", "netcoredbg" } },
   },
   {
@@ -13,6 +13,7 @@ return {
     opts = {
       servers = {
         omnisharp = {
+          cmd = { "dotnet", vim.fn.stdpath("data") .. "/mason/packages/omnisharp/OmniSharp.dll" },
           handlers = {
             ["textDocument/definition"] = function(...)
               return require("omnisharp_extended").handler(...)
@@ -21,8 +22,10 @@ return {
           keys = {
             {
               "gd",
-              function()
+              LazyVim.has("telescope.nvim") and function()
                 require("omnisharp_extended").telescope_lsp_definitions()
+              end or function()
+                require("omnisharp_extended").lsp_definitions()
               end,
               desc = "Goto Definition",
             },
@@ -66,7 +69,6 @@ return {
     optional = true,
     opts = function()
       local dap = require("dap")
-      -- Configure the .NET Core debugger with netcoredbg
       if not dap.adapters["netcoredbg"] then
         require("dap").adapters["netcoredbg"] = {
           type = "executable",
@@ -77,27 +79,18 @@ return {
           },
         }
       end
-      for _, lang in ipairs({ "cs" }) do
+      for _, lang in ipairs({ "cs", "fsharp", "vb" }) do
         if not dap.configurations[lang] then
           dap.configurations[lang] = {
             {
               type = "netcoredbg",
-              name = "Launch Otep CMS Api",
+              name = "Launch file",
               request = "launch",
+              ---@diagnostic disable-next-line: redundant-parameter
               program = function()
-                return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/otep/bin/Debug/net8.0/otep_cms.dll", "file")
+                return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/", "file")
               end,
-              cwd = vim.fn.getcwd() .. "/otep",
-              env = {
-                ASPNETCORE_ENVIRONMENT = "Localhost",
-              },
-              args = {
-                "/p:EnvironmentName=Localhost",
-                "--urls=https://localhost:7054",
-                "--environment=Localhost",
-              },
-              port = 7054,
-              preLaunchTask = "build",
+              cwd = "${workspaceFolder}",
             },
           }
         end

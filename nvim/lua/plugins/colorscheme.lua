@@ -205,14 +205,6 @@ return {
       }
     end,
   },
-
-  -- {
-  --   "folke/ida-dark.nvim",
-  --   dev = true,
-  --   priority = 1000,
-  --   lazy = false,
-  -- },
-
   -- {
   --   "craftzdog/solarized-osaka.nvim",
   --   lazy = true,

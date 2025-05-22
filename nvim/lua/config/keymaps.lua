@@ -13,10 +13,6 @@ mapkey("<leader>bp", "bprevious", "n") -- Prev buffer
 mapkey("<leader>bb", "e #", "n") -- Switch to Other Buffer
 mapkey("<leader>`", "e #", "n") -- Switch to Other Buffer
 
--- Directory Navigatio}n
-mapkey("<leader>m", "NvimTreeFocus", "n")
-mapkey("<leader>e", "NvimTreeToggle", "n")
-
 -- Pane and Window Navigation
 mapkey("<C-h>", "<C-w>h", "n") -- Navigate Left
 mapkey("<C-j>", "<C-w>j", "n") -- Navigate Down
@@ -31,6 +27,10 @@ mapkey("<C-j>", "TmuxNavigateDown", "n") -- Navigate Down
 mapkey("<C-k>", "TmuxNavigateUp", "n") -- Navigate Up
 mapkey("<C-l>", "TmuxNavigateRight", "n") -- Navigate Right
 
+-- Tmux Navigation with Ctrl+Shift+h and Ctrl+Shift+l
+mapkey("<C-w>l", "<Cmd>silent !tmux previous-window<CR>", "n") -- Navigate to the previous pane in tmux
+mapkey("<C-w>h", "<Cmd>silent !tmux next-window<CR>", "n") -- Navigate to the next pane in tmux
+
 -- Window Management
 mapkey("<leader>sv", "vsplit", "n") -- Split Vertically
 mapkey("<leader>sh", "split", "n") -- Split Horizontally
@@ -41,6 +41,9 @@ mapkey("<C-Right>", "vertical resize -2", "n")
 
 -- Show Full File-Path
 mapkey("<leader>pa", "ShowPath", "n") -- Show Full File Path
+
+-- ignore enter in insert mode
+vim.keymap.set("i", "<CR>", "<CR>", { noremap = true, silent = true })
 
 -- Indenting
 vim.keymap.set("v", "<", "<gv", { silent = true, noremap = true })
@@ -115,57 +118,6 @@ vim.keymap.set("n", "gf", "<cmd>e <cfile><cr>", { desc = "Open File" })
 util.command("ToggleBackground", function()
   vim.o.background = vim.o.background == "dark" and "light" or "dark"
 end)
-
--- Swap clangd compile commands
-
-local function swap_compilecommands()
-  local json = require("json")
-  -- take rootdir/compile_commands.json and swap the two entries
-  local rootdir = vim.fn.getcwd()
-  local file = rootdir .. "/compile_commands.json"
-  local f = io.open(file, "r")
-  if not f then
-    vim.notify("No compile_commands.json found")
-    return
-  end
-  local data = f:read("*all")
-  f:close()
-  local commands = json.decode(data)
-  commands[1], commands[2] = commands[2], commands[1]
-
-  f = io.open(file, "w")
-  if not f then
-    vim.notify("Could not open compile_commands.json for writing!")
-    return
-  end
-  f:write(json.encode(commands))
-  f:close()
-  vim.notify("Swapped compile_commands.json!")
-end
-
-local function swap_compilecommands2()
-  local shell_code = [=[
-#!/usr/bin/env bash
-
-compile_commands_file="$PWD/compile_commands.json"
-echo "$compile_commands_file"
-tmp_file=$(mktemp)
-
-jq '[.[1], .[0]]' "$compile_commands_file" >"$tmp_file" && mv "$tmp_file" "$compile_commands_file"
-]=]
-  local tmp_file = vim.fn.tempname()
-  local f = io.open(tmp_file, "w")
-  if not f then
-    vim.notify("Could not open tmp_file for writing!")
-    return
-  end
-  f:write(shell_code)
-  f:close()
-  vim.fn.jobstart({ "sh", tmp_file }, { detach = true })
-  vim.notify("Swapped compile_commands.json!")
-end
-
--- vim.keymap.set("n", "<leader>clf", swap_compilecommands2, { desc = "Swap Compile Commands" })
 
 local watch_type = require("vim._watch").FileChangeType
 

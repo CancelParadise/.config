@@ -5,4 +5,6 @@ menus
 tmux/plugins
 nvim_vscode
 tmux/plugins
+nvim/pack
 nvim/lazy-lock.json
+github-copilot

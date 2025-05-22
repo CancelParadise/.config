@@ -1,6 +1,4 @@
 return {
-
-  -- Add Angular to treesitter
   {
     "nvim-treesitter",
     opts = function(_, opts)
@@ -15,34 +13,37 @@ return {
       })
     end,
   },
-  -- LSP Servers
   {
     "neovim/nvim-lspconfig",
     opts = {
       servers = {
-        angularls = {},
-      },
-      setup = {
-        angularls = function()
-          LazyVim.lsp.on_attach(function(client)
-            --HACK: disable angular renaming capability due to duplicate rename popping up
+        angularls = {
+          on_attach = function(client)
+            -- HACK: Disable Angular rename capability to prevent duplicate rename prompt
             client.server_capabilities.renameProvider = false
-          end, "angularls")
-        end,
+          end,
+        },
+        vtsls = {
+          settings = {
+            tsserver = {
+              globalPlugins = { "@angular/language-server" },
+              pluginProbeLocations = {
+                vim.fn.stdpath("data") .. "/lazy/angular-language-server/node_modules/@angular/language-server",
+              },
+              enableForWorkspaceTypeScriptVersions = false,
+            },
+          },
+        },
       },
     },
   },
-  -- Configure tsserver plugin
   {
-    "neovim/nvim-lspconfig",
+    "conform.nvim",
     opts = function(_, opts)
-      LazyVim.extend(opts.servers.vtsls, "settings.vtsls.tsserver.globalPlugins", {
-        {
-          name = "@angular/language-server",
-          location = LazyVim.get_pkg_path("angular-language-server", "/node_modules/@angular/language-server"),
-          enableForWorkspaceTypeScriptVersions = false,
-        },
-      })
+      if LazyVim.has_extra("formatting.prettier") then
+        opts.formatters_by_ft = opts.formatters_by_ft or {}
+        opts.formatters_by_ft.htmlangular = { "prettier" }
+      end
     end,
   },
 }
