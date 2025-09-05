@@ -13,7 +13,7 @@ return {
     opts = {
       servers = {
         omnisharp = {
-          cmd = { "dotnet", vim.fn.stdpath("data") .. "/mason/packages/omnisharp/OmniSharp.dll" },
+          cmd = { "dotnet", vim.fn.stdpath("data") .. "/mason/packages/omnisharp/libexec/OmniSharp.dll" },
           handlers = {
             ["textDocument/definition"] = function(...)
               return require("omnisharp_extended").handler(...)
@@ -49,54 +49,21 @@ return {
       table.insert(opts.sources, nls.builtins.formatting.csharpier)
     end,
   },
-  {
-    "stevearc/conform.nvim",
-    optional = true,
-    opts = {
-      formatters_by_ft = {
-        cs = { "csharpier" },
-      },
-      formatters = {
-        csharpier = {
-          command = "dotnet-csharpier",
-          args = { "--write-stdout" },
-        },
-      },
-    },
-  },
-  {
-    "mfussenegger/nvim-dap",
-    optional = true,
-    opts = function()
-      local dap = require("dap")
-      if not dap.adapters["netcoredbg"] then
-        require("dap").adapters["netcoredbg"] = {
-          type = "executable",
-          command = vim.fn.exepath("netcoredbg"),
-          args = { "--interpreter=vscode" },
-          options = {
-            detached = false,
-          },
-        }
-      end
-      for _, lang in ipairs({ "cs", "fsharp", "vb" }) do
-        if not dap.configurations[lang] then
-          dap.configurations[lang] = {
-            {
-              type = "netcoredbg",
-              name = "Launch file",
-              request = "launch",
-              ---@diagnostic disable-next-line: redundant-parameter
-              program = function()
-                return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/", "file")
-              end,
-              cwd = "${workspaceFolder}",
-            },
-          }
-        end
-      end
-    end,
-  },
+  -- {
+  --   "stevearc/conform.nvim",
+  --   optional = true,
+  --   opts = {
+  --     formatters_by_ft = {
+  --       cs = { "csharpier" },
+  --     },
+  --     formatters = {
+  --       csharpier = {
+  --         command = "dotnet-csharpier",
+  --         args = { "--write-stdout" },
+  --       },
+  --     },
+  --   },
+  -- },
   {
     "nvim-neotest/neotest",
     optional = true,

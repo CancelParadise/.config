@@ -1,0 +1,88 @@
+{
+ "Week": "2025-04-07",
+ "LastWeek": "",
+ "X": 0.9480166769315699,
+ "Programs": [
+  {
+   "Program": "cmd/asm",
+   "Version": "go1.23.7",
+   "GoVersion": "go1.23.7",
+   "GOOS": "linux",
+   "GOARCH": "amd64",
+   "Counters": {
+    "asm/flag:D": 45,
+    "asm/flag:I": 45,
+    "asm/flag:gensymabis": 13,
+    "asm/flag:o": 45,
+    "asm/flag:p": 45,
+    "asm/flag:trimpath": 45,
+    "asm/invocations": 45
+   },
+   "Stacks": {}
+  },
+  {
+   "Program": "cmd/compile",
+   "Version": "go1.23.7",
+   "GoVersion": "go1.23.7",
+   "GOOS": "linux",
+   "GOARCH": "amd64",
+   "Counters": {
+    "compile/flag:asmhdr": 13,
+    "compile/flag:buildid": 78,
+    "compile/flag:c": 78,
+    "compile/flag:complete": 60,
+    "compile/flag:goversion": 78,
+    "compile/flag:importcfg": 78,
+    "compile/flag:lang": 78,
+    "compile/flag:nolocalimports": 78,
+    "compile/flag:o": 78,
+    "compile/flag:p": 78,
+    "compile/flag:pack": 78,
+    "compile/flag:std": 72,
+    "compile/flag:symabis": 13,
+    "compile/flag:trimpath": 78,
+    "compile/invocations": 158
+   },
+   "Stacks": {}
+  },
+  {
+   "Program": "cmd/go",
+   "Version": "go1.23.7",
+   "GoVersion": "go1.23.7",
+   "GOOS": "linux",
+   "GOARCH": "amd64",
+   "Counters": {
+    "go/buildcache/hit": 237,
+    "go/buildcache/miss": 79,
+    "go/buildcache/stdlib-recompiled": 1,
+    "go/goroot:other": 4,
+    "go/invocations": 4,
+    "go/mode:module": 4,
+    "go/platform/host/linux/major-version:5": 4,
+    "go/platform/host/linux/version:5-15": 4,
+    "go/platform/target/goamd64:v1": 4,
+    "go/platform/target/goarch:amd64": 4,
+    "go/platform/target/goos:linux": 4,
+    "go/subcommand:install": 4
+   },
+   "Stacks": {}
+  },
+  {
+   "Program": "cmd/link",
+   "Version": "go1.23.7",
+   "GoVersion": "go1.23.7",
+   "GOOS": "linux",
+   "GOARCH": "amd64",
+   "Counters": {
+    "link/flag:buildid": 1,
+    "link/flag:buildmode": 1,
+    "link/flag:extld": 1,
+    "link/flag:importcfg": 1,
+    "link/flag:o": 1,
+    "link/invocations": 5
+   },
+   "Stacks": {}
+  }
+ ],
+ "Config": "v0.0.0-0"
+}
