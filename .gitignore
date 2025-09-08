@@ -8,3 +8,16 @@ tmux/plugins
 nvim/pack
 nvim/lazy-lock.json
 github-copilot
+tt.*
+.tests
+doc/tags
+debug
+.repro
+foo.*
+*.log
+data
+glab-cli
+go
+nextjs-nodejs
+nvim/pack
+nvim/after

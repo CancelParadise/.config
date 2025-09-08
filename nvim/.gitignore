@@ -6,3 +6,8 @@ debug
 foo.*
 *.log
 data
+glab-cli
+go
+nextjs-nodejs
+nvim/pack
+nvim/after

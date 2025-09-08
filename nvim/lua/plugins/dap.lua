@@ -41,34 +41,61 @@ return {
     }
 
     -----------------------------------------------------
-    -- Load launchSettings.json
+    -- Load launchSettings.json with debug prints
     -----------------------------------------------------
     local function load_launch_settings()
-      local json = vim.fn.getcwd() .. "/Properties/launchSettings.json"
+      local json_path = vim.fn.getcwd() .. "/Properties/launchSettings.json"
+      print("Checking launchSettings.json path:", json_path)
+
+      -- Check if file exists
+      local file_exists = vim.fn.filereadable(json_path) == 1
+      print("File exists:", file_exists)
+
+      if not file_exists then
+        print("launchSettings.json not found!")
+        return {}
+      end
+
       local profiles = {}
-      local ok, data = pcall(vim.fn.json_decode, vim.fn.readfile(json))
-      if ok and data and data.profiles then
-        for name, _ in pairs(data.profiles) do
-          table.insert(profiles, {
+      local file_content = vim.fn.readfile(json_path)
+      local ok, data = pcall(vim.fn.json_decode, file_content)
+
+      print("JSON parse success:", ok)
+      if not ok then
+        print("JSON parse error:", data)
+        return {}
+      end
+
+      if data and data.profiles then
+        print("Found profiles:", vim.inspect(vim.tbl_keys(data.profiles)))
+        for name, profile in pairs(data.profiles) do
+          print("Processing profile:", name)
+          -- Include environment variables from the profile
+          local config = {
             type = "netcoredbg",
             name = "Launch profile: " .. name,
             request = "launch",
             program = function()
-              return vim.fn.input("Path to dll (built project): ", vim.fn.getcwd() .. "/bin/Debug/net8.0/", "file")
+              return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/bin/Debug/net8.0/", "file")
             end,
             cwd = "${workspaceFolder}",
             stopAtEntry = false,
             console = "integratedTerminal",
-          })
+            env = profile.environmentVariables or {}, -- Include environment variables
+          }
+          table.insert(profiles, config)
         end
       end
+
+      print("Loaded profiles:", vim.inspect(profiles))
       return profiles
     end
 
     -----------------------------------------------------
-    -- Final C# configs
+    -- Final C# configs with debug prints
     -----------------------------------------------------
-    dap.configurations.cs = vim.list_extend(load_launch_settings(), {
+    local launch_settings = load_launch_settings()
+    local final_configs = vim.list_extend(launch_settings, {
       {
         type = "netcoredbg",
         name = "Launch .NET Core (manual)",
@@ -88,11 +115,23 @@ return {
       },
     })
 
+    print("Final DAP configurations:", vim.inspect(final_configs))
+    dap.configurations.cs = final_configs
+    print("DAP for .NET Core configured successfully")
+
+    -----------------------------------------------------
+    -- Debug listener to track configuration selection
+    -----------------------------------------------------
+    dap.listeners.before.launch["debug_config"] = function(config)
+      print("Selected configuration:", vim.inspect(config))
+    end
+
     -----------------------------------------------------
     -- Keymaps
     -----------------------------------------------------
     local map = vim.keymap.set
     map("n", "<F5>", function()
+      print("Starting debugger...")
       dap.continue()
     end, { desc = "DAP continue" })
     map("n", "<F10>", function()
