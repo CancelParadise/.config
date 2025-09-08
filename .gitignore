@@ -16,8 +16,11 @@ debug
 foo.*
 *.log
 data
-glab-cli
 go
 nextjs-nodejs
 nvim/pack
 nvim/after
+procps
+glab-cli
+efm-langserver
+chromium
