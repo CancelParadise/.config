@@ -1,49 +1,21 @@
 return {
   {
     "nvim-lualine/lualine.nvim",
+    optional = true,
     event = "VeryLazy",
-    dependencies = { "AndreM222/copilot-lualine" },
     opts = function(_, opts)
-      -- ตรวจสอบว่า copilot-lualine โหลดได้หรือไม่
-      local copilot_ok, copilot_lualine = pcall(require, "copilot-lualine")
-      
-      if copilot_ok then
-        -- ตั้งค่า copilot-lualine
-        copilot_lualine.setup({
-          show_colors = true,
-          show_loading = true,
-          symbols = {
-            status = {
-              icons = {
-                enabled = "🤖",  -- Copilot เปิดใช้งาน
-                sleep = "😴",    -- auto-trigger ปิด
-                disabled = "🚫", -- Copilot ปิด
-                warning = "⚠️",  -- มีปัญหา
-                unknown = "❓",  -- ไม่ทราบสถานะ
-              },
-              hl = {
-                enabled = "#50FA7B",  -- สีเขียว
-                sleep = "#AEB7D0",    -- สีเทา
-                disabled = "#6272A4", -- สีเทาเข้ม
-                warning = "#FFB86C",  -- สีส้ม
-                unknown = "#FF5555",  -- สีแดง
-              },
-            },
-            spinners = "dots", -- animation loading
-            spinner_color = "#6272A4",
-          },
-        })
-        
-        -- เพิ่ม copilot component เข้า lualine_x
-        table.insert(opts.sections.lualine_x, copilot_lualine.component)
-      end
-      
-      -- เพิ่ม emoji สนุกๆ ตามเดิม
-      table.insert(opts.sections.lualine_x, {
-        function()
-          return "😄"
-        end,
-      })
+      table.insert(
+        opts.sections.lualine_x,
+        2,
+        LazyVim.lualine.status(LazyVim.config.icons.kinds.Copilot, function()
+          local clients = package.loaded["copilot"] and LazyVim.lsp.get_clients({ name = "copilot", bufnr = 0 }) or {}
+          if #clients > 0 then
+            local status = require("copilot.status").data.status
+            return (status == "InProgress" and "pending") or (status == "Warning" and "error") or "ok"
+          end
+        end)
+      )
     end,
   },
 }
+
