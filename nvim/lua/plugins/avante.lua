@@ -6,7 +6,10 @@ return {
       or "make",
     event = "VeryLazy",
     opts = {
+      instructions_file = "avante.md",
       provider = "copilot",
+      -- Add model selection
+      model = "gpt-4o",
       selection = {
         hint_display = "none",
       },
