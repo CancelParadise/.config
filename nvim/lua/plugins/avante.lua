@@ -8,8 +8,11 @@ return {
     opts = {
       instructions_file = "avante.md",
       provider = "copilot",
-      -- Add model selection
-      model = "gpt-4o",
+      providers = {
+        copilot = {
+          model = "claude-sonnet-4.6", -- ✅ correct model ID for GitHub Copilot API
+        },
+      },
       selection = {
         hint_display = "none",
       },

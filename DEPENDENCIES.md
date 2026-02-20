@@ -132,5 +132,83 @@ Before proceeding, make sure you have the following tools installed:
   npm install -g typescript typescript-language-server
   ```
 
--- With the Addition verifying bufferopts/lint fixes DEe
+---
+
+## 🪟 WSL2 (Ubuntu 25.04) Specific Dependencies
+
+If you are running this on **Windows with WSL2 (Ubuntu 25.04)**, follow the steps below to install all required dependencies inside your WSL2 environment.
+
+### System Packages
+
+```bash
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y git zsh curl wget build-essential unzip ripgrep fd-find python3 python3-pip tmux
+```
+
+### Neovim (Latest via PPA)
+
+```bash
+sudo add-apt-repository ppa:neovim-ppa/unstable -y
+sudo apt update && sudo apt install -y neovim
+```
+
+### Node.js (via NVM)
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+source ~/.zshenv
+nvm install --lts
+```
+
+### win32yank (Clipboard Integration for WSL2 ↔ Windows)
+
+```bash
+curl -sLo /tmp/win32yank.zip https://github.com/equalsraf/win32yank/releases/latest/download/win32yank-x64.zip
+unzip -p /tmp/win32yank.zip win32yank.exe > /tmp/win32yank.exe
+chmod +x /tmp/win32yank.exe
+sudo mv /tmp/win32yank.exe /usr/local/bin/win32yank.exe
+```
+
+### Zsh as Default Shell
+
+```bash
+chsh -s $(which zsh)
+```
+
+### Set ZDOTDIR for Zsh
+
+Add this line to your `~/.zshenv`:
+
+```bash
+echo 'export ZDOTDIR="$HOME/.config/zsh"' >> ~/.zshenv
+```
+
+### Tmux Plugin Manager (TPM)
+
+```bash
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+```
+
+> After starting tmux, press `Ctrl+a` then `I` to install all plugins.
+
+### JetBrains Mono Nerd Font
+
+Install on **Windows** (not inside WSL):
+
+1. Download from [NerdFonts](https://www.nerdfonts.com/font-downloads)
+2. Extract and double-click to install each `.ttf` file
+3. Set the font in your terminal emulator (WezTerm, Kitty, Alacritty, or Windows Terminal)
+
+### Recommended `.wslconfig` (Windows-side)
+
+Create `C:\Users\<YourUsername>\.wslconfig`:
+
+```ini
+[wsl2]
+memory=8GB
+processors=4
+swap=2GB
+```
+
+> Adjust values based on your machine's available RAM and CPU cores.
 
