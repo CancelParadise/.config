@@ -1,14 +1,15 @@
 {
   "extras": [
     "plugins.extras.lang.angular",
+    "plugins.extras.lang.csharp",
     "plugins.extras.lang.json",
     "plugins.extras.lang.python",
     "plugins.extras.lang.typescript",
-    "plugins.extras.lang.csharp"
+    "plugins.extras.lang.rust"
   ],
   "install_version": 8,
   "news": {
-    "NEWS.md": "10960"
+    "NEWS.md": "11866"
   },
   "version": 8
 }

@@ -1,49 +1,38 @@
 return {
   {
-    "nvim-treesitter",
+    "nvim-treesitter/nvim-treesitter",
     opts = function(_, opts)
       if type(opts.ensure_installed) == "table" then
         vim.list_extend(opts.ensure_installed, { "angular", "scss" })
       end
-      vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
-        pattern = { "*.component.html", "*.container.html" },
-        callback = function()
-          vim.treesitter.start(nil, "angular")
-        end,
-      })
     end,
   },
   {
     "neovim/nvim-lspconfig",
-    opts = {
-      servers = {
-        angularls = {
-          on_attach = function(client)
-            -- HACK: Disable Angular rename capability to prevent duplicate rename prompt
-            client.server_capabilities.renameProvider = false
-          end,
-        },
-        vtsls = {
-          settings = {
-            tsserver = {
-              globalPlugins = { "@angular/language-server" },
-              pluginProbeLocations = {
-                vim.fn.stdpath("data") .. "/lazy/angular-language-server/node_modules/@angular/language-server",
-              },
-              enableForWorkspaceTypeScriptVersions = false,
-            },
-          },
-        },
-      },
-    },
+    opts = function(_, opts)
+      opts.servers = opts.servers or {}
+      opts.servers.angularls = {
+        cmd = { vim.fn.expand("~/.local/bin/ngserver-wrapper") },
+        filetypes = { "html", "typescript", "typescriptreact", "typescript.tsx" },
+      }
+      opts.servers.vtsls = vim.tbl_deep_extend("force", opts.servers.vtsls or {}, {
+        filetypes = { "typescript", "javascript", "typescriptreact", "javascriptreact" },
+      })
+
+      -- สร้าง autocommand เพื่อ setup angularls เมื่อเปิดไฟล์ HTML
+      opts.setup = opts.setup or {}
+      opts.setup.angularls = function(_, server_opts)
+        require("lspconfig").angularls.setup(server_opts)
+      end
+
+      return opts
+    end,
   },
   {
-    "conform.nvim",
+    "nvim-mason/mason.nvim",
     opts = function(_, opts)
-      if LazyVim.has_extra("formatting.prettier") then
-        opts.formatters_by_ft = opts.formatters_by_ft or {}
-        opts.formatters_by_ft.htmlangular = { "prettier" }
-      end
+      opts.ensure_installed = opts.ensure_installed or {}
+      vim.list_extend(opts.ensure_installed, { "angular-language-server" })
     end,
   },
 }

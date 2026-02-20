@@ -11,3 +11,5 @@ vim.g.lazyvim_python_ruff = "ruff"
 -- only for diagnostics. The rest of LSP support will still be
 -- provided by rust-analyzer.
 vim.g.lazyvim_rust_diagnostics = "rust-analyzer"
+-- Native inline completions don't support being shown as regular completions
+vim.g.ai_cmp = false

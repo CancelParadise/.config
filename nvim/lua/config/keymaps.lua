@@ -39,6 +39,11 @@ mapkey("<C-Down>", "resize -2", "n")
 mapkey("<C-Left>", "vertical resize +2", "n")
 mapkey("<C-Right>", "vertical resize -2", "n")
 
+-- Copilot Management
+mapkey("<leader>aE", "Copilot enable", "n") -- Enable Copilot
+mapkey("<leader>aD", "Copilot disable", "n") -- Disable Copilot
+mapkey("<leader>aS", "Copilot status", "n") -- Status Copilot
+
 -- Show Full File-Path
 mapkey("<leader>pa", "ShowPath", "n") -- Show Full File Path
 
