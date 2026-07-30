@@ -1,7 +1,6 @@
 return {
   {
     "github/copilot.vim",
-    lazy = false,
     event = "InsertEnter",
     config = function()
       -- Remove this line if you want Tab to accept suggestions:

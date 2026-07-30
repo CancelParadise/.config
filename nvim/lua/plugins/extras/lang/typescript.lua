@@ -3,7 +3,7 @@ return {
   {
     "neovim/nvim-lspconfig",
     dependencies = {
-      "jose-elias-alvarez/typescript.nvim",
+      "pmizio/typescript-tools.nvim",
     },
     ---@class PluginLspOpts
     opts = {
