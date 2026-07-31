@@ -1,1 +1,1 @@
-vim.opt.mouse = ""
+vim.opt.mouse = "a"
