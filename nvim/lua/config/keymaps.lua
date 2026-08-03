@@ -35,6 +35,43 @@ mapkey("<C-w>h", "<Cmd>silent !tmux next-window<CR>", "n") -- Navigate to the ne
 -- Window Management
 mapkey("<leader>sv", "vsplit", "n") -- Split Vertically
 mapkey("<leader>sh", "split", "n") -- Split Horizontally
+
+local resize_commands = {
+  ["+"] = "resize +2",
+  ["-"] = "resize -2",
+  [">"] = "vertical resize +2",
+  ["<"] = "vertical resize -2",
+}
+
+local function resize_window(initial_key)
+  vim.cmd(resize_commands[initial_key])
+
+  while true do
+    vim.api.nvim_echo({ { "Resize: + taller, - shorter, > wider, < narrower, <Esc> exit", "ModeMsg" } }, false, {})
+    local ok, key = pcall(vim.fn.getcharstr)
+    local command = ok and resize_commands[key] or nil
+
+    if not command then
+      break
+    end
+
+    vim.cmd(command)
+  end
+
+  vim.api.nvim_echo({ { "" } }, false, {})
+end
+
+for key, command in pairs({
+  ["+"] = "Increase Height",
+  ["-"] = "Decrease Height",
+  [">"] = "Increase Width",
+  ["<"] = "Decrease Width",
+}) do
+  vim.keymap.set("n", "<leader>w" .. key, function()
+    resize_window(key)
+  end, { desc = command, silent = true })
+end
+
 mapkey("<C-Up>", "resize +2", "n")
 mapkey("<C-Down>", "resize -2", "n")
 mapkey("<C-Left>", "vertical resize +2", "n")
