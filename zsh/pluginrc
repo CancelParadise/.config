@@ -1,21 +1,23 @@
 () {
-  local ZPLUGINDIR=/etc/zsh/plugins
+  local ZPLUGINDIR="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/plugins"
+  mkdir -p "$ZPLUGINDIR"
 
   apply() {
-    github=$1
-    plugin=$2
+    local github=$1
+    local plugin=$2
+    local entrypoint="${plugin}.plugin.zsh"
     
     if [ ! -d "${ZPLUGINDIR}/${plugin}" ]; then
       echo "WARNING: ${plugin} not found. Installing..."
-      sudo git clone "https://www.github.com/${github}/${plugin}" "${ZPLUGINDIR}/${plugin}"
+      git clone --depth=1 "https://github.com/${github}/${plugin}.git" "${ZPLUGINDIR}/${plugin}" || return
       echo "SUCCESS: ${plugin} installed!"
     fi
     
     if [ "${plugin}" = "powerlevel10k" ]; then
-      source "${ZPLUGINDIR}/${plugin}/${plugin}.zsh-theme"
-    else
-      source "${ZPLUGINDIR}/${plugin}/${plugin}.plugin.zsh"
+      entrypoint="${plugin}.zsh-theme"
     fi
+
+    source "${ZPLUGINDIR}/${plugin}/${entrypoint}"
   }
 
   apply zdharma-continuum fast-syntax-highlighting
@@ -24,4 +26,3 @@
   apply jeffreytse zsh-vi-mode
   apply romkatv powerlevel10k 
 }
-

@@ -10,7 +10,7 @@ return {
         sidebars = "transparent",
         floats = "transparent",
       },
-      transparent = true,
+      transparent = false,
       sidebars = {
         "qf",
         "vista_kind",

@@ -5,6 +5,16 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+# Keep Linux command lookup fast while preserving core WSL interoperability.
+typeset -U path PATH
+path=(
+  ${path:#/mnt/*}
+  /opt/nvim-linux-x86_64/bin
+  /mnt/c/Windows/System32
+  /mnt/c/Windows
+  /mnt/c/Windows/System32/WindowsPowerShell/v1.0
+)
+
 [ -f "${ZDOTDIR}/aliasrc" ] && source "${ZDOTDIR}/aliasrc"
 [ -f "${ZDOTDIR}/optionrc" ] && source "${ZDOTDIR}/optionrc"
 [ -f "${ZDOTDIR}/pluginrc" ] && source "${ZDOTDIR}/pluginrc"
@@ -37,9 +47,8 @@ bindkey -M viins '^[[B' history-substring-search-down
 bindkey -M viins '^[OB' history-substring-search-down
 
 # colours
-autoload -U colors && colors	      # colours
-autoload -U compinit && compinit    # basic completion
-autoload -U compinit colors zcalc   # theming
+autoload -U colors zcalc
+colors
 
 # tab completion
 zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' # Case insensitive tab completion
@@ -61,11 +70,23 @@ export LESS=-R
 zstyle :compinstall ~/.config/zsh/.zshrc
 
 autoload -Uz compinit
-compinit
+if [[ -f "${ZDOTDIR}/.zcompdump" ]]; then
+  compinit -C -d "${ZDOTDIR}/.zcompdump"
+else
+  compinit -d "${ZDOTDIR}/.zcompdump"
+fi
 
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
+load_nvm() {
+  unfunction nvm node npm npx corepack 2>/dev/null
+  [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
+  [ -s "$NVM_DIR/bash_completion" ] && source "$NVM_DIR/bash_completion"
+}
+
+for command in nvm node npm npx corepack; do
+  eval "${command}() { load_nvm; ${command} \"\$@\"; }"
+done
+unset command
 
 # To customize prompt, run `p10k configure` or edit ~/.config/zsh/.p10k.zsh.
 [[ ! -f ~/.config/zsh/.p10k.zsh ]] || source ~/.config/zsh/.p10k.zsh

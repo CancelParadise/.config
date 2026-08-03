@@ -12,7 +12,15 @@ return {
         { "<leader>du", function() require("dapui").toggle({}) end, desc = "Dap UI" },
         { "<leader>de", function() require("dapui").eval() end, desc = "Eval", mode = { "n", "x" } },
       },
-      opts = {},
+      opts = {
+        layouts = {
+          {
+            elements = { "repl" },
+            position = "bottom",
+            size = 10,
+          },
+        },
+      },
       config = function(_, opts)
         local dap = require("dap")
         local dapui = require("dapui")

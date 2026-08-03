@@ -3,6 +3,11 @@ local function notify(message, level)
 end
 
 local launch_state = {}
+local profile_state = {}
+local profile_environment = {
+  applied = {},
+  original = {},
+}
 
 local function read_file(path)
   if vim.fn.filereadable(path) == 0 then
@@ -18,6 +23,7 @@ local function parse_csproj(path)
     return nil
   end
 
+  path = vim.fs.normalize(path)
   local assembly_name = content:match("<AssemblyName>(.-)</AssemblyName>")
     or vim.fs.basename(path):gsub("%.csproj$", "")
   local output_type = content:match("<OutputType>(.-)</OutputType>")
@@ -25,12 +31,20 @@ local function parse_csproj(path)
   local is_runnable = output_type == "Exe"
     or sdk == "Microsoft.NET.Sdk.Web"
     or (sdk and sdk:match("^Aspire%.AppHost%.Sdk"))
+  local project_dir = vim.fs.dirname(path)
+  local references = {}
+
+  for include in content:gmatch('<ProjectReference%s+[^>]-Include="(.-)"') do
+    local reference = include:gsub("\\", "/")
+    references[#references + 1] = vim.fs.normalize(vim.fs.joinpath(project_dir, reference))
+  end
 
   return {
     assembly_name = assembly_name,
     is_runnable = is_runnable,
     path = path,
-    project_dir = vim.fs.dirname(path),
+    project_dir = project_dir,
+    references = references,
   }
 end
 
@@ -59,14 +73,18 @@ local function collect_projects(root_dir)
   table.sort(csprojs)
 
   local projects = {}
+  local projects_by_path = {}
   for _, path in ipairs(csprojs) do
     local project = parse_csproj(path)
-    if project and project.is_runnable then
-      projects[#projects + 1] = project
+    if project then
+      projects_by_path[project.path] = project
+      if project.is_runnable then
+        projects[#projects + 1] = project
+      end
     end
   end
 
-  return projects
+  return projects, projects_by_path
 end
 
 local function to_relative_path(root_dir, path)
@@ -74,7 +92,33 @@ local function to_relative_path(root_dir, path)
   return path:gsub("^" .. prefix .. "/?", "")
 end
 
-local function select_project(projects, root_dir)
+local function reference_distance(project, target_path, projects_by_path, visited)
+  if project.path == target_path then
+    return 0
+  end
+
+  visited = vim.tbl_extend("force", visited or {}, { [project.path] = true })
+  local shortest
+
+  for _, reference in ipairs(project.references) do
+    if reference == target_path then
+      shortest = 1
+      break
+    end
+
+    local referenced_project = projects_by_path[reference]
+    if referenced_project and not visited[reference] then
+      local distance = reference_distance(referenced_project, target_path, projects_by_path, visited)
+      if distance and (not shortest or distance + 1 < shortest) then
+        shortest = distance + 1
+      end
+    end
+  end
+
+  return shortest
+end
+
+local function select_project(projects, projects_by_path, root_dir)
   if #projects == 0 then
     error(("No runnable .NET projects found under %s"):format(root_dir))
   end
@@ -87,6 +131,22 @@ local function select_project(projects, root_dir)
         if project.path == nearest then
           return project
         end
+      end
+
+      local closest_project
+      local closest_distance
+      for _, project in ipairs(projects) do
+        local distance = reference_distance(project, nearest, projects_by_path)
+        if distance and (not closest_distance or distance < closest_distance) then
+          closest_project = project
+          closest_distance = distance
+        elseif distance == closest_distance then
+          closest_project = nil
+        end
+      end
+
+      if closest_project then
+        return closest_project
       end
     end
   end
@@ -153,43 +213,100 @@ local function current_launch_key()
   }, "::")
 end
 
-local function pick_profile_name(profiles)
-  local names = vim.tbl_keys(profiles)
-  table.sort(names)
-
-  for _, preferred in ipairs({ "https", "http" }) do
-    if profiles[preferred] and profiles[preferred].commandName == "Project" then
-      return preferred
-    end
-  end
-
-  for _, name in ipairs(names) do
-    if profiles[name].commandName == "Project" then
-      return name
-    end
-  end
-end
-
-local function load_launch_profile(project)
+local function load_launch_profiles(project)
   local launch_settings_path = vim.fs.joinpath(project.project_dir, "Properties", "launchSettings.json")
   local content = read_file(launch_settings_path)
   if not content then
-    return nil, nil
+    return {}
   end
 
   local ok, launch_settings = pcall(vim.json.decode, content)
   if not ok then
     notify(("Failed to parse %s"):format(launch_settings_path), vim.log.levels.WARN)
+    return {}
+  end
+
+  local profiles = {}
+  for name, profile in pairs(launch_settings.profiles or {}) do
+    if profile.commandName == "Project" then
+      profiles[name] = profile
+    end
+  end
+  return profiles
+end
+
+local function select_launch_profile(project, force)
+  local profiles = load_launch_profiles(project)
+  local names = vim.tbl_keys(profiles)
+  table.sort(names)
+
+  if #names == 0 then
     return nil, nil
   end
 
-  local profiles = launch_settings.profiles or {}
-  local profile_name = pick_profile_name(profiles)
-  if not profile_name then
-    return nil, nil
+  local selected_name = profile_state[project.path]
+  if not force and selected_name and profiles[selected_name] then
+    return selected_name, profiles[selected_name]
   end
 
-  return profile_name, profiles[profile_name]
+  if #names == 1 then
+    selected_name = names[1]
+  else
+    local current_coroutine = coroutine.running()
+    assert(current_coroutine, "Launch profile selection must run inside the DAP coroutine")
+
+    vim.ui.select(names, {
+      prompt = ("Select launch profile for %s:"):format(vim.fs.basename(project.path)),
+      format_item = function(name)
+        local environment = profiles[name].environmentVariables or {}
+        local environment_name = environment.ASPNETCORE_ENVIRONMENT or environment.DOTNET_ENVIRONMENT
+        return environment_name and ("%s (%s)"):format(name, environment_name) or name
+      end,
+    }, function(name)
+      vim.schedule(function()
+        local ok, err = coroutine.resume(current_coroutine, name)
+        if not ok then
+          notify(err, vim.log.levels.ERROR)
+        end
+      end)
+    end)
+
+    selected_name = coroutine.yield()
+    if not selected_name then
+      error("Launch cancelled: no launch profile selected")
+    end
+  end
+
+  profile_state[project.path] = selected_name
+  return selected_name, profiles[selected_name]
+end
+
+local function restore_profile_environment()
+  for key in pairs(profile_environment.applied) do
+    local original = profile_environment.original[key]
+    vim.env[key] = original == vim.NIL and nil or original
+  end
+  profile_environment.applied = {}
+end
+
+local function apply_profile_environment(profile_name, profile)
+  restore_profile_environment()
+
+  local env = vim.deepcopy(profile.environmentVariables or {})
+  if profile.applicationUrl and env.ASPNETCORE_URLS == nil then
+    env.ASPNETCORE_URLS = profile.applicationUrl
+  end
+  env.DOTNET_LAUNCH_PROFILE = profile_name
+
+  for key, value in pairs(env) do
+    if profile_environment.original[key] == nil then
+      profile_environment.original[key] = vim.env[key] or vim.NIL
+    end
+    vim.env[key] = tostring(value)
+    profile_environment.applied[key] = true
+  end
+
+  return env
 end
 
 local function find_program_path(project)
@@ -284,8 +401,8 @@ local function resolve_project()
   end
 
   local root_dir = resolve_root_dir()
-  local projects = collect_projects(root_dir)
-  local project = select_project(projects, root_dir)
+  local projects, projects_by_path = collect_projects(root_dir)
+  local project = select_project(projects, projects_by_path, root_dir)
   launch_state = { key = key, project = project }
   return project
 end
@@ -300,7 +417,7 @@ local function resolve_launch_configuration()
     error(("Unable to find debug output for %s"):format(project.path))
   end
 
-  local profile_name, profile = load_launch_profile(project)
+  local profile_name, profile = select_launch_profile(project)
   local args = {}
   local env = {}
 
@@ -309,17 +426,7 @@ local function resolve_launch_configuration()
       args = require("dap.utils").splitstr(profile.commandLineArgs)
     end
 
-    for key, value in pairs(profile.environmentVariables or {}) do
-      env[key] = value
-    end
-
-    if profile.applicationUrl and env.ASPNETCORE_URLS == nil then
-      env.ASPNETCORE_URLS = profile.applicationUrl
-    end
-
-    if profile_name then
-      env.DOTNET_LAUNCH_PROFILE = profile_name
-    end
+    env = apply_profile_environment(profile_name, profile)
   end
 
   return {
@@ -395,6 +502,30 @@ local function setup_dap()
       vim.deepcopy(attach_configuration),
     }
   end
+
+  vim.api.nvim_create_user_command("DotnetSelectProfile", function()
+    local profile_coroutine = coroutine.create(function()
+      local project = resolve_project()
+      local profile_name, profile = select_launch_profile(project, true)
+      if profile then
+        apply_profile_environment(profile_name, profile)
+        notify(("Using %s launch profile: %s"):format(vim.fs.basename(project.path), profile_name))
+      else
+        notify(("No Project launch profiles found for %s"):format(project.path), vim.log.levels.WARN)
+      end
+    end)
+
+    local ok, err = coroutine.resume(profile_coroutine)
+    if not ok then
+      notify(err, vim.log.levels.ERROR)
+    end
+  end, { desc = "Select .NET launch profile", force = true })
+
+  vim.api.nvim_create_user_command("DotnetClearProfile", function()
+    profile_state = {}
+    restore_profile_environment()
+    notify(".NET launch profile cleared")
+  end, { desc = "Clear .NET launch profile", force = true })
 end
 
 return {
@@ -423,6 +554,10 @@ return {
 
       opts.servers = opts.servers or {}
       opts.servers.omnisharp = {
+        on_attach = function(client)
+          -- OmniSharp can reject documentHighlight requests at the end of a recently edited buffer.
+          client.server_capabilities.documentHighlightProvider = false
+        end,
         cmd_env = {
           DOTNET_ROOT = dotnet_root,
           PATH = dotnet_root .. ":" .. path,

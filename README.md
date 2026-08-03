@@ -272,6 +272,7 @@ nvim/
 - **Prefix**: `Ctrl+a`
 - **Vim-style pane navigation** (`C-h/j/k/l`)
 - **Seamless Neovim ↔ Tmux navigation** via `vim-tmux-navigator`
+- **System clipboard integration** for keyboard and mouse selections
 - **Session persistence** via `tmux-resurrect` & `tmux-continuum` (auto-save every 1 min)
 - **Status bar** with CPU, memory, battery, online status, date/time
 

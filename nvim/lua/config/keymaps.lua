@@ -137,7 +137,13 @@ end, { desc = "Google" })
 --  │ GX - replicate netrw functionality │
 --  ╰────────────────────────────────────╯
 local function open_link()
-  local url = vim.ui._get_url()
+  local get_urls = require("vim.ui")._get_urls
+  local urls = get_urls and get_urls() or {}
+  local url = urls[1] or vim.fn.expand("<cfile>")
+  if url == "" then
+    return vim.notify("No link found under cursor")
+  end
+
   if url:match("%w://") then
     return do_open(url)
   end
@@ -153,6 +159,23 @@ local function open_link()
 end
 
 vim.keymap.set("n", "gx", open_link)
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "dap-repl", "dapui_console" },
+  callback = function(event)
+    vim.keymap.set("n", "<C-LeftMouse>", function()
+      local mouse = vim.fn.getmousepos()
+      if mouse.winid == 0 or mouse.line == 0 then
+        return vim.notify("No link found under cursor")
+      end
+
+      vim.api.nvim_set_current_win(mouse.winid)
+      vim.api.nvim_win_set_cursor(mouse.winid, { mouse.line, math.max(mouse.column - 1, 0) })
+      open_link()
+    end, { buffer = event.buf, desc = "Open Link" })
+  end,
+})
+
 vim.keymap.set("n", "gf", "<cmd>e <cfile><cr>", { desc = "Open File" })
 
 --  ╭──────────╮
